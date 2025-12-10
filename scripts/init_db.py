@@ -6,6 +6,15 @@ engine = get_engine()
 def init_db():
     with engine.begin() as conn:
         conn.execute(text("""
+        CREATE TABLE IF NOT EXISTS ingesta_raw (
+            id SERIAL PRIMARY KEY,
+            source TEXT NOT NULL,
+            payload JSONB NOT NULL,
+            usuario TEXT DEFAULT 'admin',
+            fecha TIMESTAMP DEFAULT NOW()
+        );
+        """))
+        conn.execute(text("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id SERIAL PRIMARY KEY,
             usuario TEXT UNIQUE NOT NULL,
