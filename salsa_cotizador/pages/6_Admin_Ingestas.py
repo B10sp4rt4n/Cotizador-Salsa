@@ -23,7 +23,7 @@ if df.empty:
 
 # ---- Tabla resumen ----
 st.subheader("📋 Ingestas registradas")
-st.dataframe(df[["id", "source", "fecha", "usuario"]], use_container_width=True)
+st.dataframe(df[["id", "source", "fecha", "usuario"]], width='stretch')
 
 # ---- Gráfica por tipo de ingesta ----
 st.subheader("📊 Ingestas por tipo de fuente")
@@ -36,7 +36,7 @@ chart1 = (
         color="source:N"
     )
 )
-st.altair_chart(chart1, use_container_width=True)
+st.altair_chart(chart1, width='stretch')
 
 # ---- Gráfica por día ----
 df["solo_fecha"] = pd.to_datetime(df["fecha"]).dt.date
@@ -51,7 +51,7 @@ chart2 = (
         color="source:N",
     )
 )
-st.altair_chart(chart2, use_container_width=True)
+st.altair_chart(chart2, width='stretch')
 
 # ---- Ver detalle payload ----
 st.subheader("🔍 Ver detalle de payload")

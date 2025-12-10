@@ -33,11 +33,11 @@ with engine.begin() as conn:
 
 # Mostrar usuarios
 st.subheader("👥 Estado de Usuarios")
-st.dataframe(df_users, use_container_width=True)
+st.dataframe(df_users, width='stretch')
 
 # Mostrar tabla accesos
 st.subheader("📅 Registro de Accesos (Eventos)")
-st.dataframe(df_logs, use_container_width=True)
+st.dataframe(df_logs, width='stretch')
 
 # ==========================
 # Gráficas de eventos
@@ -55,7 +55,7 @@ if not df_logs.empty:
             tooltip=["evento", "count()"]
         )
     )
-    st.altair_chart(chart_eventos, use_container_width=True)
+    st.altair_chart(chart_eventos, width='stretch')
 
     st.subheader("🌐 Frecuencia por IP")
     chart_ip = (
@@ -68,7 +68,7 @@ if not df_logs.empty:
             tooltip=["ip", "count()"]
         )
     )
-    st.altair_chart(chart_ip, use_container_width=True)
+    st.altair_chart(chart_ip, width='stretch')
 
     st.subheader("📈 Accesos por Fecha")
     df_logs["fecha_simple"] = pd.to_datetime(df_logs["fecha"]).dt.date
@@ -83,7 +83,7 @@ if not df_logs.empty:
             tooltip=["fecha_simple", "count()", "evento"]
         )
     )
-    st.altair_chart(chart_date, use_container_width=True)
+    st.altair_chart(chart_date, width='stretch')
 
     # Alertas básicas
     st.subheader("🚨 Alertas detectadas")

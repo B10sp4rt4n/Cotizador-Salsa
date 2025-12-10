@@ -44,7 +44,7 @@ if not logs.empty:
             tooltip=["fecha_simple", "evento", "count()"]
         )
     )
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width='stretch')
 else:
     st.info("Sin datos de eventos aún.")
 
@@ -64,7 +64,7 @@ if not logs.empty:
             tooltip=["usuario", "evento", "count()"]
         )
     )
-    st.altair_chart(chart2, use_container_width=True)
+    st.altair_chart(chart2, width='stretch')
 else:
     st.info("Sin actividad de usuarios registrada.")
 

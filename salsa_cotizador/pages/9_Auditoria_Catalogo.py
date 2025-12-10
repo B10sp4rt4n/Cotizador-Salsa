@@ -35,7 +35,7 @@ if subido:
         y="cantidad:Q",
         color="categoria:N"
     )
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width='stretch')
 
     # ---- Alertas ----
     from scripts.detectar_cambios import generar_alertas
@@ -45,10 +45,10 @@ if subido:
 
     # ---- Detalles ----
     st.subheader("Detalles de nuevos productos")
-    st.dataframe(cambios["nuevos"], use_container_width=True)
+    st.dataframe(cambios["nuevos"], width='stretch')
 
     st.subheader("Detalles de eliminados")
-    st.dataframe(cambios["eliminados"], use_container_width=True)
+    st.dataframe(cambios["eliminados"], width='stretch')
 
     st.subheader("Cambios de precio")
-    st.dataframe(cambios["cambios_precio"], use_container_width=True)
+    st.dataframe(cambios["cambios_precio"], width='stretch')

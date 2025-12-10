@@ -18,7 +18,7 @@ df = pd.DataFrame(rows, columns=["id", "folio", "cliente", "total", "fecha"])
 if cliente_filter:
     df = df[df["cliente"].str.contains(cliente_filter, case=False, na=False)]
 
-st.dataframe(df, use_container_width=True)
+st.dataframe(df, width='stretch')
 
 st.subheader("Acciones")
 selected_id = st.number_input("ID de cotización", min_value=0, step=1)

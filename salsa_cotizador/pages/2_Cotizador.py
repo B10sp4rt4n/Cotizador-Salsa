@@ -72,7 +72,7 @@ if archivo:
 
     # Mostrar un preview
     st.write("Vista previa:")
-    st.dataframe(df.head(20), use_container_width=True)
+    st.dataframe(df.head(20), width='stretch')
 
     # Guardar en sesión
     st.session_state["lista"] = df
@@ -115,7 +115,7 @@ if "lista" in st.session_state:
     df_final = df_filtrado[df_filtrado["NO. DE PARTE"] == parte_sel]
 
     st.write("Productos filtrados:")
-    st.dataframe(df_filtrado, use_container_width=True)
+    st.dataframe(df_filtrado, width='stretch')
 
     # Selección del item para uso posterior
     if df_final.empty:
@@ -187,7 +187,7 @@ if "cotizacion" in st.session_state and isinstance(st.session_state["cotizacion"
     # Editor interactivo (puedes editar cantidad y descuento)
     edited_df = st.data_editor(
         df_cot,
-        use_container_width=True,
+        width='stretch',
         num_rows="dynamic",
         column_config={
             "cantidad": st.column_config.NumberColumn("Cantidad", min_value=1),

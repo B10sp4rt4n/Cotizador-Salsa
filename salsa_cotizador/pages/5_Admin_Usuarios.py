@@ -23,7 +23,7 @@ with engine.begin() as conn:
 df = pd.DataFrame(usuarios, columns=["ID", "Usuario", "Nombre", "Rol", "Activo", "Fecha Alta"])
 
 st.subheader("Lista de Usuarios")
-st.dataframe(df, use_container_width=True)
+st.dataframe(df, width='stretch')
 
 st.subheader("🔐 Resetear contraseña de usuario")
 
