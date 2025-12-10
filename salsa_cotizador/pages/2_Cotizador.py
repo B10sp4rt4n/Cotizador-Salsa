@@ -33,20 +33,46 @@ if "lista" in st.session_state:
 
     df_lista = st.session_state["lista"]
 
-    # Filtros
-    clase = st.selectbox("Clase", ["Todas"] + sorted(df_lista["CLASE"].dropna().unique().tolist()))
-    subclase = st.selectbox("Subclase", ["Todas"] + sorted(df_lista["SUBCLASE"].dropna().unique().tolist()))
+        # ==============================
+        # FILTRO 1: CLASE
+        # ==============================
+        clases = sorted(df_lista["CLASE"].dropna().unique().tolist())
+        clase_sel = st.selectbox("Clase", ["Todas"] + clases)
 
-    filtrado = df_lista.copy()
+        df_filtrado = df_lista.copy()
 
-    if clase != "Todas":
-        filtrado = filtrado[filtrado["CLASE"] == clase]
+        if clase_sel != "Todas":
+            df_filtrado = df_filtrado[df_filtrado["CLASE"] == clase_sel]
 
-    if subclase != "Todas":
-        filtrado = filtrado[filtrado["SUBCLASE"] == subclase]
+        # ==============================
+        # FILTRO 2: SUBCLASE
+        # ==============================
+        subclases = sorted(df_filtrado["SUBCLASE"].dropna().unique().tolist())
+        subclase_sel = st.selectbox("Subclase", ["Todas"] + subclases)
 
-    st.write("Productos filtrados:")
-    st.dataframe(filtrado, use_container_width=True)
+        if subclase_sel != "Todas":
+            df_filtrado = df_filtrado[df_filtrado["SUBCLASE"] == subclase_sel]
+
+        # ==============================
+        # FILTRO 3: NÚMERO DE PARTE
+        # ==============================
+        partes = sorted(df_filtrado["NO. DE PARTE"].astype(str).unique().tolist())
+        parte_sel = st.selectbox("Número de parte", partes)
+
+        df_final = df_filtrado[df_filtrado["NO. DE PARTE"] == parte_sel]
+
+        st.write("Productos filtrados:")
+        st.dataframe(df_filtrado, use_container_width=True)
+
+        # Selección del item para uso posterior
+        if df_final.empty:
+            st.warning("No se encontró el número de parte seleccionado en el filtro actual.")
+            st.stop()
+        item = df_final.iloc[0]
+
+    if filtrado.empty:
+        st.warning("No hay productos para la selección actual.")
+        st.stop()
 
 
     # =====================================
@@ -55,10 +81,18 @@ if "lista" in st.session_state:
     st.subheader("➕ Agregar línea a la cotización")
 
     # Partes
-    partes = filtrado["NO. DE PARTE"].astype(str).unique().tolist()
+    partes = filtrado["NO. DE PARTE"].dropna().astype(str).unique().tolist()
+    if len(partes) == 0:
+        st.warning("No hay números de parte disponibles para agregar.")
+        st.stop()
+
     parte_sel = st.selectbox("Número de parte", partes)
 
-    item = filtrado[filtrado["NO. DE PARTE"] == parte_sel].iloc[0]
+    item_df = filtrado[filtrado["NO. DE PARTE"] == parte_sel]
+    if item_df.empty:
+        st.error("No se encontró el producto seleccionado en el filtro actual.")
+        st.stop()
+    item = item_df.iloc[0]
 
     st.info(f"Seleccionado: {item['DESCRIPCIÓN']}")
 
