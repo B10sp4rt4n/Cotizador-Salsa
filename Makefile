@@ -29,6 +29,19 @@ ingest_refacciones:
 clean_cache:
 	find . -name "__pycache__" -type d -exec rm -r {} +
 
+# Detección de cambios y reconstrucción
+detect_equipos:
+	$(PY) scripts/detectar_cambios.py data/equipos.xlsx EQUIPOS
+
+detect_refacciones:
+	$(PY) scripts/detectar_cambios.py data/refacciones.xlsx REFACCIONES
+
+rebuild_equipos:
+	$(PY) scripts/reconstruir_catalogo.py EQUIPOS
+
+rebuild_refacciones:
+	$(PY) scripts/reconstruir_catalogo.py REFACCIONES
+
 # ---------- Deploy ----------
 deploy_streamlit:
 	git add .
