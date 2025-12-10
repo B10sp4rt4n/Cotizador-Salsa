@@ -29,6 +29,9 @@ def init_db():
             nombre TEXT,
             rol TEXT CHECK (rol IN ('vendedor','admin')) DEFAULT 'vendedor',
             activo BOOLEAN DEFAULT TRUE,
+            intentos_fallidos INTEGER DEFAULT 0,
+            requiere_reset BOOLEAN DEFAULT FALSE,
+            ultimo_login TIMESTAMP,
             fecha_alta TIMESTAMP DEFAULT NOW()
         );
         """))
@@ -88,6 +91,16 @@ def init_db():
             valor_nuevo TEXT,
             motivo TEXT,
             fecha TIMESTAMP DEFAULT NOW()
+        );
+        """))
+
+        conn.execute(text("""
+        CREATE TABLE IF NOT EXISTS accesos (
+            id SERIAL PRIMARY KEY,
+            usuario TEXT,
+            evento TEXT,
+            fecha TIMESTAMP DEFAULT NOW(),
+            ip TEXT
         );
         """))
 

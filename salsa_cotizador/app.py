@@ -18,14 +18,19 @@ def login_ui():
     password = st.text_input("Contraseña", type="password")
 
     if st.button("Entrar"):
-        user = autenticar(usuario, password)
-        if user:
-            st.session_state.usuario = user["nombre"]
-            st.session_state.rol = user["rol"]
-            st.success("Acceso concedido.")
-            st.experimental_rerun()
+        result = autenticar(usuario, password)
+        if result == "bloqueado":
+            st.error("Cuenta bloqueada por intentos fallidos. Contacta al administrador.")
+        elif result is None:
+            st.error("Credenciales incorrectas.")
+        elif isinstance(result, dict) and "requiere_reset" in result:
+            st.session_state.reset_user = usuario
+            st.rerun()
         else:
-            st.error("Usuario o contraseña incorrectos.")
+            st.session_state.usuario = result["nombre"]
+            st.session_state.rol = result["rol"]
+            st.success("Acceso exitoso")
+            st.rerun()
 
 if st.session_state.usuario is None:
     login_ui()
