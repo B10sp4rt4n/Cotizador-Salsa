@@ -25,6 +25,11 @@ def login_ui():
             st.error("Credenciales incorrectas.")
         elif isinstance(result, dict) and "requiere_reset" in result:
             st.session_state.reset_user = usuario
+            st.sidebar.page_link("pages/0_Reset_Password.py", label="🔐 Cambiar contraseña")
+            st.rerun()
+        elif isinstance(result, dict) and "mfa" in result:
+            st.session_state.mfa_user = result
+            st.sidebar.page_link("pages/0_MFA.py", label="🔐 Verificación MFA")
             st.rerun()
         else:
             st.session_state.usuario = result["nombre"]
@@ -55,6 +60,7 @@ else:
         st.sidebar.page_link("pages/6_Admin_Catalogo.py", label="📂 Catálogo / Ingesta")
         st.sidebar.page_link("pages/6_Admin_Ingestas.py", label="📥 Ingestas")
         st.sidebar.page_link("pages/7_Historial_Modificaciones.py", label="📝 Modificaciones")
+        st.sidebar.page_link("pages/10_Admin_Auditoria_Usuarios.py", label="🛡 Auditoría Usuarios")
 
         st.sidebar.markdown("---")
         st.sidebar.markdown("## 📄 Documentos")

@@ -18,7 +18,7 @@ def crear_usuario(usuario, password, nombre, rol="vendedor"):
 def autenticar(usuario, password):
     with engine.begin() as conn:
         row = conn.execute(text("""
-            SELECT id, password_hash, rol, nombre, intentos_fallidos, requiere_reset
+            SELECT id, password_hash, rol, nombre, intentos_fallidos, requiere_reset, secret_mfa
             FROM usuarios
             WHERE usuario = :u AND activo = TRUE
         """), {"u": usuario}).fetchone()
@@ -40,6 +40,9 @@ def autenticar(usuario, password):
 
         if row.requiere_reset:
             return {"id": row.id, "requiere_reset": True}
+
+        if row.secret_mfa:
+            return {"mfa": True, "secret": row.secret_mfa, "usuario": usuario, "rol": row.rol, "nombre": row.nombre}
 
         return {"id": row.id, "rol": row.rol, "nombre": row.nombre}
     else:

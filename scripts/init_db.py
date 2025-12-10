@@ -31,6 +31,7 @@ def init_db():
             activo BOOLEAN DEFAULT TRUE,
             intentos_fallidos INTEGER DEFAULT 0,
             requiere_reset BOOLEAN DEFAULT FALSE,
+            secret_mfa TEXT,
             ultimo_login TIMESTAMP,
             fecha_alta TIMESTAMP DEFAULT NOW()
         );
