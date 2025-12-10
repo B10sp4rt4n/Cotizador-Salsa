@@ -3,6 +3,31 @@ import pandas as pd
 
 st.title("🧮 Cotizador SALSA - MVP")
 
+# Utilidad: detección robusta de columna de precio
+def detectar_columna_precio(df: pd.DataFrame) -> str | None:
+    candidatos = [
+        "PRECIO LISTA",
+        "PRECIO",
+        "LIST PRICE",
+        "PRECIO_LISTA",
+        "PRICE",
+        "PRECIO UNITARIO",
+        "PRECIO UNIT",
+        "PVP",
+    ]
+    cols_map = {str(c).strip().upper(): c for c in df.columns}
+    for nombre in candidatos:
+        if nombre in cols_map:
+            return cols_map[nombre]
+    # heurística adicional: buscar columnas numéricas con valores positivos típicos
+    for c in df.columns:
+        serie = df[c]
+        if pd.api.types.is_numeric_dtype(serie):
+            positivos = serie.dropna()
+            if len(positivos) > 0 and (positivos > 0).mean() > 0.7:
+                return c
+    return None
+
 # ===========================================
 # 1. Subir lista de precios
 # ===========================================
@@ -15,7 +40,35 @@ if archivo:
     st.success("Lista de precios cargada.")
 
     # Limpieza mínima
-    df.columns = [c.strip() for c in df.columns]
+    df.columns = [str(c).strip() for c in df.columns]
+    # Normalización de nombres esperados (case-insensitive)
+    rename_map = {}
+    cols_up = {c.upper(): c for c in df.columns}
+    def pick(*options):
+        for opt in options:
+            if opt in cols_up:
+                return cols_up[opt]
+        return None
+    c_clase = pick("CLASE")
+    c_subclase = pick("SUBCLASE")
+    c_np = pick("NO. DE PARTE", "NUMERO DE PARTE", "NÚMERO DE PARTE", "NUMERO_PARTE", "PART NUMBER", "PARTNUMBER")
+    c_modelo = pick("MODELO")
+    c_desc = pick("DESCRIPCION", "DESCRIPCIÓN", "DESCRIPCION", "DESCRIPTION")
+    c_precio = pick("PRECIO LISTA", "PRECIO", "LIST PRICE", "PRECIO_LISTA")
+
+    for key, val in {
+        "CLASE": c_clase,
+        "SUBCLASE": c_subclase,
+        "NO. DE PARTE": c_np,
+        "MODELO": c_modelo,
+        "DESCRIPCIÓN": c_desc,
+        "PRECIO LISTA": c_precio,
+    }.items():
+        if val and val != key:
+            rename_map[val] = key
+
+    if rename_map:
+        df = df.rename(columns=rename_map)
 
     # Mostrar un preview
     st.write("Vista previa:")
@@ -80,7 +133,13 @@ if "lista" in st.session_state:
     # =====================================
     # 4. Editar descuento y margen
     # =====================================
-    precio_lista = float(item["PRECIO LISTA"])
+    # Detectar columna de precio de forma robusta
+    col_precio = detectar_columna_precio(df_lista)
+    if not col_precio:
+        st.error("No se pudo detectar la columna de precio en el Excel. Renombra o mapea encabezados (ej. 'PRECIO LISTA').")
+        st.stop()
+    valor_precio = item.get(col_precio)
+    precio_lista = float(valor_precio) if pd.notna(valor_precio) else 0.0
 
     descuento_pct = st.number_input("Descuento (%)", value=0.0, min_value=0.0, max_value=100.0)
     margen_pct = st.number_input("Margen (%) sobre precio de venta", value=20.0, min_value=0.0, max_value=200.0)
@@ -101,29 +160,74 @@ if "lista" in st.session_state:
             st.session_state["cotizacion"] = []
 
         st.session_state["cotizacion"].append({
+            "clase": item.get("CLASE", ""),
+            "subclase": item.get("SUBCLASE", ""),
             "parte": parte_sel,
-            "descripcion": item["DESCRIPCIÓN"],
+            "descripcion": item.get("DESCRIPCIÓN", ""),
+            "cantidad": 1,
             "precio_lista": precio_lista,
             "descuento": descuento_pct,
             "costo": costo,
             "margen": margen_pct,
             "precio_venta": precio_venta,
+            "total_linea": precio_venta * 1,
         })
 
         st.success("Línea agregada.")
 
-# ===========================================
-# 6. Mostrar cotización completa
-# ===========================================
-if "cotizacion" in st.session_state:
+# =====================================
+# 6. Mostrar y editar cotización
+# =====================================
+if "cotizacion" in st.session_state and len(st.session_state["cotizacion"]) > 0:
 
-    st.subheader("📄 Cotización Actual")
+    st.subheader("📄 Cotización Actual (Multi-línea)")
 
     df_cot = pd.DataFrame(st.session_state["cotizacion"])
 
-    st.dataframe(df_cot, use_container_width=True)
+    # Editor interactivo (puedes editar cantidad y descuento)
+    edited_df = st.data_editor(
+        df_cot,
+        use_container_width=True,
+        num_rows="dynamic",  # permite añadir filas manualmente si quisieras
+        column_config={
+            "cantidad": st.column_config.NumberColumn("Cantidad", min_value=1),
+            "descuento": st.column_config.NumberColumn("Descuento (%)"),
+            "margen": st.column_config.NumberColumn("Margen (%)"),
+        }
+    )
 
-    total = df_cot["precio_venta"].sum()
+    # Recalcular totales después de edición
+    for i, row in edited_df.iterrows():
+        precio_lista = row["precio_lista"]
+        descuento = row["descuento"]
+        margen = row["margen"]
+        cantidad = row["cantidad"]
 
-    st.success(f"💰 Total cotización: {total:,.2f} MXN")
+        costo = precio_lista * (1 - descuento / 100)
+        precio_venta = costo / (1 - margen / 100)
+        total_linea = precio_venta * cantidad
+
+        edited_df.at[i, "costo"] = costo
+        edited_df.at[i, "precio_venta"] = precio_venta
+        edited_df.at[i, "total_linea"] = total_linea
+
+    # Guardar datos actualizados en sesión
+    st.session_state["cotizacion"] = edited_df.to_dict(orient="records")
+
+    # Mostrar subtotal y total final
+    subtotal = edited_df["total_linea"].sum()
+    iva = subtotal * 0.16
+    total_final = subtotal + iva
+
+    st.info(f"Subtotal: {subtotal:,.2f} MXN")
+    st.info(f"IVA (16%): {iva:,.2f} MXN")
+    st.success(f"TOTAL: {total_final:,.2f} MXN")
+
+    # =====================================
+    # Botón para borrar todas las líneas
+    # =====================================
+    if st.button("🗑 Borrar cotización completa"):
+        del st.session_state["cotizacion"]
+        st.warning("Cotización eliminada.")
+        st.rerun()
 
