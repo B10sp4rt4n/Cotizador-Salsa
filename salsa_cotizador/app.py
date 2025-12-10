@@ -39,12 +39,22 @@ else:
         st.sidebar.page_link("pages/8_Exportar_Propuesta_PDF.py", label="Generar PDF")
 
     if st.session_state.rol == "admin":
-        st.sidebar.page_link("pages/2_Cotizador.py", label="Cotizador")
-        st.sidebar.page_link("pages/4_Historial_Cotizaciones.py", label="Cotizaciones")
-        st.sidebar.page_link("pages/5_Admin_Usuarios.py", label="Administrar Usuarios")
-        st.sidebar.page_link("pages/6_Admin_Catalogo.py", label="Catálogo / Ingesta")
-        st.sidebar.page_link("pages/7_Historial_Modificaciones.py", label="Modificaciones")
-        st.sidebar.page_link("pages/8_Exportar_Propuesta_PDF.py", label="Generar PDF")
+        st.sidebar.markdown("## 🧮 Cotizador")
+        st.sidebar.page_link("pages/2_Cotizador.py", label="📄 Generar Cotización")
+        st.sidebar.page_link("pages/4_Historial_Cotizaciones.py", label="📚 Historial")
+
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("## 🛠 Administración")
+
+        st.sidebar.page_link("pages/5_Admin_Usuarios.py", label="👥 Usuarios")
+        st.sidebar.page_link("pages/6_Admin_Catalogo.py", label="📂 Catálogo / Ingesta")
+        st.sidebar.page_link("pages/6_Admin_Ingestas.py", label="📥 Ingestas")
+        st.sidebar.page_link("pages/7_Historial_Modificaciones.py", label="📝 Modificaciones")
+
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("## 📄 Documentos")
+        st.sidebar.page_link("pages/8_Exportar_Propuesta_PDF.py", label="🖨 Generar PDF")
+        st.sidebar.page_link("pages/9_Auditoria_Catalogo.py", label="🧾 Auditoría Catálogo")
 
     st.title("SALSA Cotizador - Panel Principal")
     st.write("Sistema listo. Usa el menú lateral para navegar.")

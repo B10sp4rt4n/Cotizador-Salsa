@@ -54,6 +54,21 @@ def detectar_cambios(df_nuevo, tipo_lista):
     }
 
 
+def generar_alertas(dic):
+    alertas = []
+
+    if len(dic["cambios_precio"]) > 0:
+        alertas.append("⚠ Cambios de precio detectados")
+
+    if len(dic["eliminados"]) > 0:
+        alertas.append("❌ Productos eliminados del catálogo")
+
+    if len(dic["nuevos"]) > 0:
+        alertas.append("🆕 Nuevos productos disponibles")
+
+    return alertas
+
+
 if __name__ == "__main__":
     # Uso: python scripts/detectar_cambios.py <archivo_excel> <TIPO_LISTA>
     if len(sys.argv) < 3:
