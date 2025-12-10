@@ -5,14 +5,17 @@
 
 # ---------- Variables ----------
 PY=python
-APP=app.py
+APP=salsa_cotizador/app.py
 
 # ---------- Setup local ----------
 install:
 	$(PY) -m pip install -r requirements.txt
 
 run:
-	streamlit run $(APP)
+	$(PY) -m streamlit run $(APP)
+
+load-env:
+	export $(shell cat .env | xargs)
 
 test_db:
 	$(PY) scripts/test_db_connection.py

@@ -3,7 +3,9 @@
 import bcrypt
 from sqlalchemy import text
 from modules.db import get_engine
+import streamlit as st
 import pyotp
+from modules.logger import registrar_evento
 
 engine = get_engine()
 
@@ -27,6 +29,7 @@ def autenticar(usuario, password):
         return None
 
     if row.intentos_fallidos is not None and row.intentos_fallidos >= 5:
+        registrar_evento(usuario, "bloqueado", st.session_state.get("ip", "unknown"))
         return "bloqueado"
 
     if bcrypt.checkpw(password.encode(), row.password_hash.encode()):
@@ -38,7 +41,11 @@ def autenticar(usuario, password):
                 WHERE usuario = :u
             """), {"u": usuario})
 
+        ip = st.session_state.get("ip", "unknown")
+        registrar_evento(usuario, "login_ok", ip)
+
         if row.requiere_reset:
+            registrar_evento(usuario, "requiere_reset", ip)
             return {"id": row.id, "requiere_reset": True}
 
         if row.secret_mfa:
@@ -52,7 +59,7 @@ def autenticar(usuario, password):
                 SET intentos_fallidos = COALESCE(intentos_fallidos, 0) + 1
                 WHERE usuario = :u
             """), {"u": usuario})
-
+        registrar_evento(usuario, "fail", st.session_state.get("ip", "unknown"))
         return None
 
 def generar_mfa_secret():

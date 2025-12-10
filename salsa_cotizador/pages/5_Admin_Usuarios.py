@@ -4,6 +4,7 @@ import bcrypt
 from sqlalchemy import text
 from modules.db import get_engine
 from modules.passwords import generar_password
+from modules.logger import registrar_evento
 import pyotp
 import qrcode
 from io import BytesIO
@@ -48,6 +49,7 @@ if "pwd_reset" in st.session_state and user_to_reset:
             """), {"pwd": hashed, "u": user_to_reset})
 
         st.success(f"La contraseña del usuario **{user_to_reset}** fue actualizada correctamente.")
+        registrar_evento(user_to_reset, "reset_pwd", st.session_state.get("ip", "unknown"))
         del st.session_state["pwd_reset"]
 
 st.subheader("🔐 Activar / Desactivar MFA (Google Authenticator)")
@@ -72,6 +74,7 @@ if usuario_mfa:
                 """), {"s": secret, "u": usuario_mfa})
 
             st.success("MFA activado. Escanea el siguiente código:")
+            registrar_evento(usuario_mfa, "mfa_enable", st.session_state.get("ip", "unknown"))
 
             totp = pyotp.TOTP(secret)
             url = totp.provisioning_uri(name=usuario_mfa, issuer_name="SALSA Cotizador")
@@ -90,3 +93,4 @@ if usuario_mfa:
                 """), {"u": usuario_mfa})
 
             st.success("MFA desactivado.")
+            registrar_evento(usuario_mfa, "mfa_disable", st.session_state.get("ip", "unknown"))
