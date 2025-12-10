@@ -4,7 +4,7 @@
 
 import pandas as pd
 from sqlalchemy import text
-from salsa_cotizador.modules.db import get_engine
+from modules.db import get_engine
 
 FILE_PATH = "data/refacciones.xlsx"   # cambiar por archivo real
 

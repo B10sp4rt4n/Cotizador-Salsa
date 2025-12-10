@@ -1,4 +1,4 @@
-from salsa_cotizador.modules.db import get_engine
+from modules.db import get_engine
 
 engine = get_engine()
 
