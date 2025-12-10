@@ -152,14 +152,14 @@ if "lista" in st.session_state:
     st.write(f"💲 Precio de venta: {precio_venta:,.2f}")
 
     # =====================================
-    # 5. Agregar línea a cotización
+    # 5. Agregar línea a cotización (estructura: header/lineas/totales)
     # =====================================
     if st.button("Agregar a cotización"):
 
-        if "cotizacion" not in st.session_state:
-            st.session_state["cotizacion"] = []
+        if "cotizacion" not in st.session_state or not isinstance(st.session_state["cotizacion"], dict):
+            st.session_state["cotizacion"] = {"header": {}, "lineas": [], "totales": {}}
 
-        st.session_state["cotizacion"].append({
+        st.session_state["cotizacion"]["lineas"].append({
             "clase": item.get("CLASE", ""),
             "subclase": item.get("SUBCLASE", ""),
             "parte": parte_sel,
@@ -178,17 +178,17 @@ if "lista" in st.session_state:
 # =====================================
 # 6. Mostrar y editar cotización
 # =====================================
-if "cotizacion" in st.session_state and len(st.session_state["cotizacion"]) > 0:
+if "cotizacion" in st.session_state and isinstance(st.session_state["cotizacion"], dict) and len(st.session_state["cotizacion"].get("lineas", [])) > 0:
 
     st.subheader("📄 Cotización Actual (Multi-línea)")
 
-    df_cot = pd.DataFrame(st.session_state["cotizacion"])
+    df_cot = pd.DataFrame(st.session_state["cotizacion"]["lineas"]) if st.session_state["cotizacion"]["lineas"] else pd.DataFrame()
 
     # Editor interactivo (puedes editar cantidad y descuento)
     edited_df = st.data_editor(
         df_cot,
         use_container_width=True,
-        num_rows="dynamic",  # permite añadir filas manualmente si quisieras
+        num_rows="dynamic",
         column_config={
             "cantidad": st.column_config.NumberColumn("Cantidad", min_value=1),
             "descuento": st.column_config.NumberColumn("Descuento (%)"),
@@ -198,13 +198,13 @@ if "cotizacion" in st.session_state and len(st.session_state["cotizacion"]) > 0:
 
     # Recalcular totales después de edición
     for i, row in edited_df.iterrows():
-        precio_lista = row["precio_lista"]
-        descuento = row["descuento"]
-        margen = row["margen"]
-        cantidad = row["cantidad"]
+        precio_lista = row.get("precio_lista", 0) or 0
+        descuento = row.get("descuento", 0) or 0
+        margen = row.get("margen", 0) or 0
+        cantidad = int(row.get("cantidad", 1) or 1)
 
         costo = precio_lista * (1 - descuento / 100)
-        precio_venta = costo / (1 - margen / 100)
+        precio_venta = costo / (1 - margen / 100) if (1 - margen / 100) != 0 else 0
         total_linea = precio_venta * cantidad
 
         edited_df.at[i, "costo"] = costo
@@ -212,12 +212,14 @@ if "cotizacion" in st.session_state and len(st.session_state["cotizacion"]) > 0:
         edited_df.at[i, "total_linea"] = total_linea
 
     # Guardar datos actualizados en sesión
-    st.session_state["cotizacion"] = edited_df.to_dict(orient="records")
+    st.session_state["cotizacion"]["lineas"] = edited_df.to_dict(orient="records")
 
     # Mostrar subtotal y total final
-    subtotal = edited_df["total_linea"].sum()
+    subtotal = float(edited_df["total_linea"].sum()) if not edited_df.empty else 0.0
     iva = subtotal * 0.16
     total_final = subtotal + iva
+
+    st.session_state["cotizacion"]["totales"] = {"subtotal": subtotal, "iva": iva, "total": total_final}
 
     st.info(f"Subtotal: {subtotal:,.2f} MXN")
     st.info(f"IVA (16%): {iva:,.2f} MXN")
@@ -227,7 +229,8 @@ if "cotizacion" in st.session_state and len(st.session_state["cotizacion"]) > 0:
     # Botón para borrar todas las líneas
     # =====================================
     if st.button("🗑 Borrar cotización completa"):
-        del st.session_state["cotizacion"]
+        st.session_state["cotizacion"]["lineas"] = []
+        st.session_state["cotizacion"]["totales"] = {"subtotal": 0.0, "iva": 0.0, "total": 0.0}
         st.warning("Cotización eliminada.")
         st.rerun()
 
