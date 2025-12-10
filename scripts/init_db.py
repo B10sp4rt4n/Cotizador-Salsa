@@ -1,4 +1,11 @@
+import os
+import sys
 from sqlalchemy import text
+
+# Permitir import desde paquete salsa_cotizador
+BASE_DIR = os.path.dirname(__file__)
+sys.path.append(os.path.join(BASE_DIR, "..", "salsa_cotizador"))
+
 from modules.db import get_engine
 
 engine = get_engine()

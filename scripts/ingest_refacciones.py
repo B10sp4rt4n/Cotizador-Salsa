@@ -2,8 +2,14 @@
 # Ingesta básica de lista de REFACCIONES en Neon
 # Plantilla inicial
 
+import os
+import sys
 import pandas as pd
 from sqlalchemy import text
+
+BASE_DIR = os.path.dirname(__file__)
+sys.path.append(os.path.join(BASE_DIR, "..", "salsa_cotizador"))
+
 from modules.db import get_engine
 
 FILE_PATH = "data/refacciones.xlsx"   # cambiar por archivo real

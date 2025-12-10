@@ -1,3 +1,9 @@
+import os
+import sys
+
+BASE_DIR = os.path.dirname(__file__)
+sys.path.append(os.path.join(BASE_DIR, "..", "salsa_cotizador"))
+
 from modules.db import get_engine
 
 engine = get_engine()

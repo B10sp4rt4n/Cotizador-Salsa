@@ -2,8 +2,14 @@
 # Ingesta básica de lista de EQUIPOS en Neon
 # Plantilla para administrador SALSA Cotizador
 
+import os
+import sys
 import pandas as pd
 from sqlalchemy import text
+
+BASE_DIR = os.path.dirname(__file__)
+sys.path.append(os.path.join(BASE_DIR, "..", "salsa_cotizador"))
+
 from modules.db import get_engine
 
 FILE_PATH = "data/equipos.xlsx"   # cambiar por tu archivo real
